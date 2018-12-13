@@ -29,7 +29,9 @@
  控制点
  */
 @interface ViewController ()
+@property (strong, nonatomic)UIBezierPath *bezierPath;
 @property (strong, nonatomic)CAShapeLayer *shapeLayer;
+@property (strong, nonatomic)UIImageView *iconView;
 @end
 
 @implementation ViewController
@@ -37,31 +39,61 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    [self.view addSubview:self.iconView];
 }
 
 - (void)test {
-    UIBezierPath *bezierPath = [UIBezierPath bezierPath];
-    [bezierPath moveToPoint:CGPointMake(20, 200)];
-    [bezierPath addCurveToPoint:CGPointMake(300, 300) controlPoint1:CGPointMake(100, 100) controlPoint2:CGPointMake(200, 300)];
+    [self.view.layer addSublayer:self.shapeLayer];
     
-    CAShapeLayer *shapeLayer = [CAShapeLayer layer];
-    shapeLayer.path = bezierPath.CGPath;
-    shapeLayer.strokeColor = UIColor.redColor.CGColor;
-    shapeLayer.lineWidth = 2.0f;
-    shapeLayer.fillColor = UIColor.yellowColor.CGColor;
-    [self.view.layer addSublayer:shapeLayer];
+    CALayer *carLayer = [CALayer layer];
+    carLayer.frame = CGRectMake(0, 0, 36, 36);
+    carLayer.anchorPoint = CGPointMake(0.4, 0.8);
+    carLayer.contents = (__bridge id _Nullable)([UIImage imageNamed:@"car"].CGImage);
+    [self.view.layer addSublayer:carLayer];
+    
+    CAKeyframeAnimation *anim = [CAKeyframeAnimation animation];
+    anim.keyPath = @"position";
+    anim.path = self.bezierPath.CGPath;
+    anim.duration = 4.0f;
+    anim.rotationMode = kCAAnimationRotateAuto;
+    [carLayer addAnimation:anim forKey:nil];
 }
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    [self test];
+    CAKeyframeAnimation *anim = [CAKeyframeAnimation animation];
+    anim.keyPath = @"transform.rotation";
+    anim.values = @[@angleToRadians(-3),@angleToRadians(3),@angleToRadians(-3)];
+    anim.repeatCount = MAXFLOAT;
+    [self.iconView.layer addAnimation:anim forKey:nil];
+//    [self test];
 }
 
 - (CAShapeLayer *)shapeLayer {
     if (!_shapeLayer) {
-        UIBezierPath *bezierPath = [UIBezierPath bezierPath];
-        
+        _shapeLayer = [CAShapeLayer layer];
+        _shapeLayer.path = self.bezierPath.CGPath;
+        _shapeLayer.strokeColor = UIColor.redColor.CGColor;
+        _shapeLayer.lineWidth = 2.0f;
+        _shapeLayer.fillColor = nil;
     }
     return _shapeLayer;
+}
+
+- (UIBezierPath *)bezierPath {
+    if (!_bezierPath) {
+        _bezierPath = [UIBezierPath bezierPath];
+        [_bezierPath moveToPoint:CGPointMake(20, 200)];
+        [_bezierPath addCurveToPoint:CGPointMake(300, 200) controlPoint1:CGPointMake(100, 100) controlPoint2:CGPointMake(200, 300)];
+    }
+    return _bezierPath;
+}
+
+- (UIImageView *)iconView {
+    if (!_iconView) {
+        _iconView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"icon支付宝"]];
+        _iconView.frame = CGRectMake(134, 63, 120, 120);
+    }
+    return _iconView;
 }
 
 @end
